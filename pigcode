@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>Heart</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#000; overflow:hidden; width:100vw; height:100vh; }
+canvas { display:block; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+const canvas=document.getElementById('c');
+const ctx=canvas.getContext('2d');
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+const W=canvas.width, H=canvas.height, GY=H*0.55;
+
+const MESSAGES=[
+  '只要我存在，我对你的爱便会存在。',
+  '我爱月亮，可月亮不知道。'
+];
+let msgIdx=0;
+let heart={x:-120, spd:2, t:0};
+
+function drawHeart(x,y,t){
+  const bob=Math.sin(t*0.15)*5;
+  const pulse=1+Math.sin(t*0.15)*0.06;
+  const s=70*pulse;
+
+  ctx.save();
+  ctx.translate(x, y+bob);
+  ctx.scale(pulse, pulse);
+
+  // glow
+  ctx.shadowColor='rgba(255,50,100,0.5)';
+  ctx.shadowBlur=24;
+
+  // heart body
+  const grad=ctx.createRadialGradient(-s*0.2,-s*0.2,s*0.05, 0,0,s*0.9);
+  grad.addColorStop(0,'#FF6B9D');
+  grad.addColorStop(0.5,'#FF2D6B');
+  grad.addColorStop(1,'#C2185B');
+  ctx.fillStyle=grad;
+  ctx.beginPath();
+  ctx.moveTo(0, s*0.38);
+  ctx.bezierCurveTo( s*0.9,-s*0.08,  s*1.05,-s*0.75, 0,-s*0.52);
+  ctx.bezierCurveTo(-s*1.05,-s*0.75,-s*0.9,-s*0.08, 0, s*0.38);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.shadowBlur=0;
+
+  // shine highlight
+  ctx.fillStyle='rgba(255,255,255,0.22)';
+  ctx.beginPath();
+  ctx.ellipse(-s*0.22,-s*0.28, s*0.22, s*0.14,-0.5,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+const FS=Math.max(24, Math.round(H*0.055));
+function loop(){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#000';
+  ctx.fillRect(0,0,W,H);
+  heart.t++;
+  heart.x+=heart.spd;
+  if(heart.x > W+100){ heart.x=-120; msgIdx=(msgIdx+1)%2; }
+
+  // plain white text
+  ctx.font=`bold ${FS}px 'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif`;
+  ctx.fillStyle='#fff';
+  ctx.textBaseline='middle';
+  ctx.fillText(MESSAGES[msgIdx], heart.x+95, GY-4);
+
+  drawHeart(heart.x, GY, heart.t);
+  requestAnimationFrame(loop);
+}
+
+window.addEventListener('resize',()=>location.reload());
+loop();
+</script>
+</body>
+</html>
